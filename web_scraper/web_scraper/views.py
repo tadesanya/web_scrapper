@@ -18,13 +18,14 @@ def web_scraper(request):
             result_size = form.cleaned_data['result_size']
 
             # call web scraping process
-            links = scrape_google("how to data engineering", result_size)
+            # links = scrape_google("how to data engineering", result_size)
 
             filename = create_filename()
             with open(filename, 'w+') as f:
-                for a_tag in links:
-                    f.write(a_tag.raw_html.decode('utf-8'))
-                    f.write('\n')
+                for link_list in scrape_google("how to data engineering", result_size):
+                    for a_tag in link_list:
+                        f.write(a_tag.raw_html.decode('utf-8'))
+                        f.write('\n')
 
             return HttpResponseRedirect(reverse('confirmation'))
     else:

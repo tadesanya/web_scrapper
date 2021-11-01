@@ -26,7 +26,7 @@ def get_source(url):
 
 def scrape_google(query, number_of_result):
     """Returns links gotten from query search"""
-    response_links = []
+    # response_links = []
     query = urllib.parse.quote_plus(query)
     number_of_pages, remaining_result_size = divmod(number_of_result, MAX_RESULT_PER_PAGE)
     query_start_point = 0
@@ -37,16 +37,18 @@ def scrape_google(query, number_of_result):
         response = get_source("https://www.google.co.uk/search?q=" + query + "&num=" + str(MAX_RESULT_PER_PAGE)
                               + "&start=" + str(query_start_point))
         links = response.html.find(selection_query)
-        response_links.extend(links)
+        # response_links.extend(links)
         query_start_point += 10
+        yield links
 
     # Get search results for final page
     final_response = get_source("https://www.google.co.uk/search?q=" + query + "&num=" + str(remaining_result_size)
                                 + "&start=" + str(query_start_point))
     final_links = final_response.html.find(selection_query)
-    response_links.extend(final_links)
+    # response_links.extend(final_links)
+    yield final_links
 
-    return response_links
+    # return response_links
 
 
 def create_filename():
