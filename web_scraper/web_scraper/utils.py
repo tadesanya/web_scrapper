@@ -3,6 +3,8 @@ import urllib
 from requests_html import HTMLSession
 from datetime import datetime
 
+MAX_RESULT_PER_PAGE = 10
+
 
 def get_source(url):
     """Return the source code for the provided URL.
@@ -24,16 +26,27 @@ def get_source(url):
 
 def scrape_google(query, number_of_result):
     """Returns links gotten from query search"""
+    response_links = []
     query = urllib.parse.quote_plus(query)
+    number_of_pages, remaining_result_size = divmod(number_of_result, MAX_RESULT_PER_PAGE)
+    query_start_point = 0
 
-    # account for missing 2 results if number of requested results greater than 10
-    number_of_result = number_of_result + 2 if number_of_result > 10 else number_of_result
-    response = get_source("https://www.google.co.uk/search?q=" + query + "&num=" + str(number_of_result))
-
+    # loop through all the pages needed for the number of results desired, except the final page
     selection_query = 'div.g > div > div > div > a'
-    links = response.html.find(selection_query)
+    for page_number in range(0, number_of_pages):
+        response = get_source("https://www.google.co.uk/search?q=" + query + "&num=" + str(MAX_RESULT_PER_PAGE)
+                              + "&start=" + str(query_start_point))
+        links = response.html.find(selection_query)
+        response_links.extend(links)
+        query_start_point += 10
 
-    return links
+    # Get search results for final page
+    final_response = get_source("https://www.google.co.uk/search?q=" + query + "&num=" + str(remaining_result_size)
+                                + "&start=" + str(query_start_point))
+    final_links = final_response.html.find(selection_query)
+    response_links.extend(final_links)
+
+    return response_links
 
 
 def create_filename():
