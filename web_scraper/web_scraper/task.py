@@ -2,6 +2,7 @@ import requests
 import urllib
 from requests_html import HTMLSession
 from datetime import datetime
+from celery import shared_task
 
 MAX_RESULT_PER_PAGE = 10
 
@@ -51,3 +52,12 @@ def create_filename():
     timestamp = datetime.now()
     return "result_{0}{1}{2}{3}{4}{5}.txt".format(timestamp.year, timestamp.month, timestamp.day,
                                                   timestamp.hour, timestamp.minute, timestamp.second)
+
+
+@shared_task()
+def google_search(filename, result_size):
+    with open(filename, 'w+') as f:
+        for link_list in scrape_google("how to data engineering", result_size):
+            for a_tag in link_list:
+                f.write(a_tag.raw_html.decode('utf-8'))
+                f.write('\n')

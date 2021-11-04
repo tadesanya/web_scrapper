@@ -3,8 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from .forms import ScrapeRequestForm
-
-from .utils import scrape_google, create_filename
+from .task import create_filename, google_search
 
 
 def index(request):
@@ -18,11 +17,7 @@ def web_scraper(request):
             result_size = form.cleaned_data['result_size']
 
             filename = create_filename()
-            with open(filename, 'w+') as f:
-                for link_list in scrape_google("how to data engineering", result_size):
-                    for a_tag in link_list:
-                        f.write(a_tag.raw_html.decode('utf-8'))
-                        f.write('\n')
+            google_search.delay(filename, result_size)
 
             return HttpResponseRedirect(reverse('confirmation'))
     else:
