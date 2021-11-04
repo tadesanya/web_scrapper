@@ -17,9 +17,6 @@ def web_scraper(request):
         if form.is_valid():
             result_size = form.cleaned_data['result_size']
 
-            # call web scraping process
-            # links = scrape_google("how to data engineering", result_size)
-
             filename = create_filename()
             with open(filename, 'w+') as f:
                 for link_list in scrape_google("how to data engineering", result_size):
