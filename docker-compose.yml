@@ -1,0 +1,35 @@
+version: '3.3'
+
+services:
+  web:
+    build: .
+    command: python web_scraper/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/web_scraper
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=xkzzd0)9$dfbwx+c%c9h25v2nwubau_l_$tgt#+dgewfkls#le
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+  celery:
+    build: .
+    command: celery -A web_scraper worker -l INFO # Command used to start the Celery worker in the Docker container
+    volumes:
+      - ./web_scraper:/web_scraper
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=xkzzd0)9$dfbwx+c%c9h25v2nwubau_l_$tgt#+dgewfkls#le
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - HOSTS=127.0.0.1,localhost,localhost:8000,127.0.0.1:8000
+    depends_on:
+      - web
+      - redis
+  redis:
+    image: redis:6-alpine
